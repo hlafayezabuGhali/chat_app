@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "636744597685",
+    "project_id": "chatapp-d6e0a",
+    "storage_bucket": "chatapp-d6e0a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:636744597685:android:f987624d230347d367fefc",
+        "android_client_info": {
+          "package_name": "ghali.Hla.chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636744597685-qffuk8292eqj0hk6sflt555e0ev4j15n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMNqPczLs7raSWUos046P7-QwEdU1uD_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636744597685-qffuk8292eqj0hk6sflt555e0ev4j15n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
