@@ -1,6 +1,15 @@
+import 'dart:convert';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:googleapis_auth/auth.dart';
+import 'package:googleapis_auth/auth_io.dart';
+
+import 'notificationsScreen.dart';
+import 'package:http/http.dart' as http;
 
 final _firestore = FirebaseFirestore.instance;
 late User signedInUser;
@@ -17,11 +26,9 @@ class _ChatScreenState extends State<ChatScreen> {
   final messagesTextController = TextEditingController();
   final _auth = FirebaseAuth.instance;
   String? messages;
-  @override
-  void initState() {
-    super.initState();
-    getCurrentUser();
-  }
+  //dynmic
+  List<RemoteNotification?> notifications = [];
+  String token = '';
 
   void getCurrentUser() {
     try {
@@ -33,6 +40,68 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       print(e);
     }
+  }
+
+  void getNotifications() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        setState(() {
+          notifications.add(message.notification);
+        });
+        print(
+            'Message also contained a notification: ${message.notification!.title}');
+      }
+    });
+  }
+
+  Future<AccessToken> getAccessToken() async {
+    final serviceAccount = await rootBundle.loadString(
+        'assets/chatapp-d6e0a-firebase-adminsdk-s56kw-cc4401b83c.json');
+    final data = await json.decode(serviceAccount);
+    print(data);
+    final accountCredentials = ServiceAccountCredentials.fromJson({
+      "private_key_id": data['private_key_id'],
+      "private_key": data['private_key'],
+      "client_email": data['client_email'],
+      "client_id": data['client_id'],
+      "type": data['type'],
+    });
+    final scopes = ["https://www.googleapis.com/auth/firebase.messaging"];
+    final AuthClient authclient = await clientViaServiceAccount(
+      accountCredentials,
+      scopes,
+    )
+      ..close(); // Remember to close the client when you are finished with it.
+
+    print(authclient.credentials.accessToken);
+
+    return authclient.credentials.accessToken;
+  }
+
+  void sendNotification(String title, String body) async {
+    http.Response response = await http.post(
+      Uri.parse(
+          'https://fcm.googleapis.com/v1/projects/chatapp-d6e0a/messages:send'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        "message": {
+          "topic": "breaking_news",
+          "notification": {"body": body, "title": title}
+        }
+      }),
+    );
+    print('response.body: ${response.body}');
+  }
+
+  @override
+  void initState() {
+    getCurrentUser();
+    getNotifications();
+    getAccessToken().then((value) => token = value.data);
+    super.initState();
   }
 
   @override
@@ -56,6 +125,37 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: Icon(Icons.notifications),
+                onPressed: () {
+                  Navigator.pushNamed(context, NotificationsScreen.id,
+                          arguments: notifications)
+                      .then(
+                    (value) => setState(() {
+                      notifications.clear();
+                    }),
+                  );
+                },
+              ),
+              notifications.isNotEmpty
+                  ? Container(
+                      margin: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
+                      decoration: const BoxDecoration(
+                          color: Colors.red, shape: BoxShape.circle),
+                      child: Text(
+                        '${notifications.length}',
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                    )
+                  : const SizedBox(),
+            ],
+          ),
           IconButton(
             onPressed: () {
               _auth.signOut();
@@ -107,6 +207,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         'sender': signedInUser.email,
                         'time': FieldValue.serverTimestamp(),
                       });
+                      sendNotification(
+                          'message from ${signedInUser.email}', messages!);
+                      notifications.clear();
                     },
                     child: Text(
                       'send',
@@ -134,7 +237,7 @@ class MessageSreamBuilder extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('messages').orderBy('time').snapshots(),
         builder: (context, snapshot) {
-          List<MessageLine> messagesWidgets = [];
+          List<MessageBubble> messagesWidgets = [];
           if (!snapshot.hasData) {
             return Center(
                 child: CircularProgressIndicator(
@@ -146,7 +249,7 @@ class MessageSreamBuilder extends StatelessWidget {
             final messsageText = item.get('text');
             final messsageSender = item.get('sender');
             final currentUser = signedInUser.email;
-            final messsageWidget = MessageLine(
+            final messsageWidget = MessageBubble(
               sender: messsageSender,
               text: messsageText,
               isMe: currentUser == messsageSender,
@@ -164,8 +267,8 @@ class MessageSreamBuilder extends StatelessWidget {
   }
 }
 
-class MessageLine extends StatelessWidget {
-  const MessageLine(
+class MessageBubble extends StatelessWidget {
+  const MessageBubble(
       {required this.text, required this.sender, required this.isMe, Key? key})
       : super(key: key);
   final String? text;

@@ -7,6 +7,42 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:636744597685:android:585a50d89660c5d567fefc",
+        "android_client_info": {
+          "package_name": "com.oalshokri.chat_app_class"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "636744597685-qffuk8292eqj0hk6sflt555e0ev4j15n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMNqPczLs7raSWUos046P7-QwEdU1uD_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "636744597685-qffuk8292eqj0hk6sflt555e0ev4j15n.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "636744597685-44cnim91s0i3uc55aln46h0mu1gndhfm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatAppProject"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:636744597685:android:f987624d230347d367fefc",
         "android_client_info": {
           "package_name": "ghali.Hla.chat_app"
@@ -29,6 +65,13 @@
             {
               "client_id": "636744597685-qffuk8292eqj0hk6sflt555e0ev4j15n.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "636744597685-44cnim91s0i3uc55aln46h0mu1gndhfm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.chatAppProject"
+              }
             }
           ]
         }
